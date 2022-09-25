@@ -27,10 +27,10 @@ public interface TodoService {
     record TodoDTO(UUID uuid, String text, Boolean done) {
         static TodoDTO fromEntity(Todo entity) {
             return TodoDTO.builder()
-                    .uuid(entity.getUuid())
-                    .text(entity.getText())
-                    .done(entity.getDone())
-                    .build();
+                          .uuid(entity.getUuid())
+                          .text(entity.getText())
+                          .done(entity.getDone())
+                          .build();
         }
     }
 

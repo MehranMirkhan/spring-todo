@@ -18,11 +18,11 @@ public class Todo {
     @Id
     @GeneratedValue
     private long id;
-    @Type(type="uuid-char")
+    @Type(type = "uuid-char")
     @Column(unique = true, updatable = false, nullable = false)
     private UUID uuid;
 
-    private String text;
+    private String  text;
     private Boolean done;
 
     @Version

@@ -7,4 +7,6 @@ import java.util.UUID;
 
 public interface TodoRepo extends JpaRepository<Todo, UUID> {
     Optional<Todo> findByUuid(UUID uuid);
+
+    void deleteByUuid(UUID uuid);
 }

@@ -13,17 +13,14 @@ import java.util.UUID;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class TodoServiceTests {
-    @Autowired TodoService  service;
+    @Autowired TodoService service;
 
     @BeforeEach
     void setUp() {
         Assertions.assertEquals(0, service.findAll().getSize());
-        TodoService.TodoCreateDTO todo1DTO = TodoService.TodoCreateDTO.builder().text("Task 1").build();
-        TodoService.TodoCreateDTO todo2DTO = TodoService.TodoCreateDTO.builder().text("Task 2").build();
-        TodoService.TodoCreateDTO todo3DTO = TodoService.TodoCreateDTO.builder().text("Task 3").build();
-        service.create(todo1DTO);
-        service.create(todo2DTO);
-        service.create(todo3DTO);
+        service.create(TodoService.TodoCreateDTO.builder().text("Task 1").build());
+        service.create(TodoService.TodoCreateDTO.builder().text("Task 2").build());
+        service.create(TodoService.TodoCreateDTO.builder().text("Task 3").build());
         Assertions.assertEquals(3, service.findAll().getSize());
     }
 
@@ -34,14 +31,14 @@ class TodoServiceTests {
 
     @Test
     void testFindAll() {
-        Page<TodoService.TodoDTO> data = service.findAll();
+        var data = service.findAll();
         Assertions.assertEquals(3, data.getTotalElements());
     }
 
     @Test
     void testSearch() {
         var search = TodoService.TodoSearchDTO.builder().text("2").build();
-        Page<TodoService.TodoDTO> data = service.findAll(search, Pageable.unpaged());
+        var data   = service.findAll(search, Pageable.unpaged());
         Assertions.assertEquals(1, data.getTotalElements());
         Assertions.assertEquals("Task 2", data.getContent().get(0).text());
     }
@@ -61,19 +58,27 @@ class TodoServiceTests {
     }
 
     @Test
-    void testGetById() {
-        UUID uuid = service.findAll().get().findFirst().map(TodoService.TodoDTO::uuid).orElseThrow();
-        TodoService.TodoDTO todo = service.getByUUID(uuid);
-        Assertions.assertEquals("Task 1", todo.text());
-    }
+    void testLifeCycle() {
+        // Create
+        var  dto  = TodoService.TodoCreateDTO.builder().text("Example Task").build();
+        var  todo = service.create(dto);
+        UUID uuid = todo.uuid();
+        Assertions.assertEquals(uuid, service.getByUUID(uuid).uuid());
+        var search = TodoService.TodoSearchDTO.builder().text("xam").build();
+        Assertions.assertEquals(uuid, service.findAll(search, Pageable.unpaged())
+                                             .stream().findFirst().orElseThrow().uuid());
+        Assertions.assertEquals(4, service.findAll().getTotalElements());
 
-    @Test
-    void testCreate() {
-        var dto = TodoService.TodoCreateDTO.builder().text("Example Task").build();
-        service.create(dto);
-        Page<TodoService.TodoDTO> data = service.findAll(TodoService.TodoSearchDTO.builder().text("xam").build(),
-                                                        Pageable.unpaged());
-        Assertions.assertEquals(1, data.getTotalElements());
-        Assertions.assertEquals("Example Task", data.getContent().get(0).text());
+        // Update
+        service.update(uuid, TodoService.TodoUpdateDTO.builder().text("New Task").done(todo.done()).build());
+        TodoService.TodoDTO newTodoFromDB = service.getByUUID(uuid);
+        Assertions.assertEquals("New Task", newTodoFromDB.text());
+        Assertions.assertEquals(todo.done(), newTodoFromDB.done());
+
+        // Delete
+        service.delete(uuid);
+        Assertions.assertThrows(RuntimeException.class, () -> service.getByUUID(uuid));
+        Assertions.assertEquals(3, service.findAll().getTotalElements());
+        Assertions.assertEquals(0, service.findAll(search, Pageable.unpaged()).getTotalElements());
     }
 }

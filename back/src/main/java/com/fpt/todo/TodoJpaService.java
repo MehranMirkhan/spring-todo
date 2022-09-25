@@ -6,6 +6,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -27,44 +28,45 @@ public class TodoJpaService implements TodoService {
     @Override
     public Page<TodoDTO> findAll(TodoSearchDTO example, Pageable pageable) {
         ExampleMatcher matcher = ExampleMatcher.matchingAll()
-                .withIgnoreCase()
-                .withIgnoreNullValues()
-                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
-                .withIgnorePaths("id", "uuid", "version");
+                                               .withIgnoreCase()
+                                               .withIgnoreNullValues()
+                                               .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
+                                               .withIgnorePaths("id", "uuid", "version");
         return repo.findAll(Example.of(example.toEntity(), matcher), pageable)
-                .map(TodoDTO::fromEntity);
+                   .map(TodoDTO::fromEntity);
     }
 
     @Override
     public TodoDTO getByUUID(UUID uuid) {
         return repo.findByUuid(uuid)
-                .map(TodoDTO::fromEntity)
-                .orElseThrow(() -> new RuntimeException("Todo item with ID %s not found".formatted(uuid)));
+                   .map(TodoDTO::fromEntity)
+                   .orElseThrow(() -> new RuntimeException("Todo item with ID %s not found".formatted(uuid)));
     }
 
     @Override
     public TodoDTO create(TodoCreateDTO dto) {
         Todo entity = Todo.builder()
-                .text(dto.text())
-                .done(false)
-                .build();
+                          .text(dto.text())
+                          .done(false)
+                          .build();
         return TodoDTO.fromEntity(repo.save(entity));
     }
 
     @Override
     public TodoDTO update(UUID uuid, TodoUpdateDTO dto) {
         Todo updatedEntity = repo.findByUuid(uuid)
-                .map(entity -> {
-                    entity.setText(dto.text());
-                    entity.setDone(dto.done());
-                    return entity;
-                }).orElseThrow(() -> new RuntimeException("Todo item with ID %s not found".formatted(uuid)));
+                                 .map(entity -> {
+                                     entity.setText(dto.text());
+                                     entity.setDone(dto.done());
+                                     return entity;
+                                 }).orElseThrow(() -> new RuntimeException("Todo item with ID %s not found".formatted(uuid)));
         return TodoDTO.fromEntity(repo.save(updatedEntity));
     }
 
     @Override
-    public void delete(UUID id) {
-        repo.deleteById(id);
+    @Transactional
+    public void delete(UUID uuid) {
+        repo.deleteByUuid(uuid);
     }
 
     @Override
