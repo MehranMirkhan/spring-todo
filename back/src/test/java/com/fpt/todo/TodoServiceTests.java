@@ -5,15 +5,26 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc
 class TodoServiceTests {
-    @Autowired TodoService service;
+    @Autowired MockMvc      mvc;
+    @Autowired TodoService  service;
 
     @BeforeEach
     void setUp() {
@@ -80,5 +91,15 @@ class TodoServiceTests {
         Assertions.assertThrows(RuntimeException.class, () -> service.getByUUID(uuid));
         Assertions.assertEquals(3, service.findAll().getTotalElements());
         Assertions.assertEquals(0, service.findAll(search, Pageable.unpaged()).getTotalElements());
+    }
+
+    @Test
+    void testNotFoundError() throws Exception {
+        UUID uuid = UUID.randomUUID();
+        mvc.perform(get("/api/todo/" + uuid)
+                            .contentType(MediaType.APPLICATION_JSON))
+           .andExpect(status().isNotFound())
+           .andExpect(jsonPath("$.id", notNullValue()))
+           .andExpect(jsonPath("$.payload.uuid", is(uuid.toString())));
     }
 }

@@ -1,5 +1,6 @@
 package com.fpt.todo;
 
+import com.fpt.common.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -40,7 +42,7 @@ public class TodoJpaService implements TodoService {
     public TodoDTO getByUUID(UUID uuid) {
         return repo.findByUuid(uuid)
                    .map(TodoDTO::fromEntity)
-                   .orElseThrow(() -> new RuntimeException("Todo item with ID %s not found".formatted(uuid)));
+                   .orElseThrow(() -> new NotFoundException("Todo item not found", Map.of("uuid", uuid)));
     }
 
     @Override
@@ -59,7 +61,8 @@ public class TodoJpaService implements TodoService {
                                      entity.setText(dto.text());
                                      entity.setDone(dto.done());
                                      return entity;
-                                 }).orElseThrow(() -> new RuntimeException("Todo item with ID %s not found".formatted(uuid)));
+                                 }).orElseThrow(() -> new NotFoundException("Todo item not found",
+                                                                            Map.of("uuid", uuid)));
         return TodoDTO.fromEntity(repo.save(updatedEntity));
     }
 
