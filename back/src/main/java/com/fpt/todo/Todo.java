@@ -4,10 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Version;
+import javax.persistence.*;
 import java.util.UUID;
 
 @Data
@@ -17,10 +16,20 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Todo {
     @Id
-    private UUID id;
+    @GeneratedValue
+    private long id;
+    @Type(type="uuid-char")
+    @Column(unique = true, updatable = false, nullable = false)
+    private UUID uuid;
+
     private String text;
-    private boolean done;
+    private Boolean done;
 
     @Version
     private int version;
+
+    @PrePersist
+    protected void onCreate() {
+        this.uuid = UUID.randomUUID();
+    }
 }

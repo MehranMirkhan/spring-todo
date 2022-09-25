@@ -3,11 +3,13 @@ package com.fpt.todo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
 @RestController
+@RequestMapping("api/todo")
 @RequiredArgsConstructor
 public class TodoController {
     private final TodoService service;
@@ -18,11 +20,12 @@ public class TodoController {
     }
 
     @GetMapping("{id}")
-    public TodoService.TodoDTO get(@PathVariable UUID id) {
-        return service.get(id);
+    public TodoService.TodoDTO getById(@PathVariable UUID id) {
+        return service.getByUUID(id);
     }
 
     @PostMapping
+    @ResponseStatus(code = HttpStatus.CREATED)
     public TodoService.TodoDTO create(@RequestBody TodoService.TodoCreateDTO dto) {
         return service.create(dto);
     }
