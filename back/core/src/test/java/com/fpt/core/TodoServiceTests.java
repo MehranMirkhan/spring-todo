@@ -1,4 +1,4 @@
-package com.fpt.todo;
+package com.fpt.core;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;

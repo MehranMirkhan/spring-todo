@@ -1,4 +1,4 @@
-package com.fpt.todo;
+package com.fpt.core;
 
 import lombok.Builder;
 import org.springframework.data.domain.Page;

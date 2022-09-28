@@ -1,4 +1,4 @@
-package com.fpt.todo;
+package com.fpt.core;
 
 import com.fpt.common.NotFoundException;
 import lombok.RequiredArgsConstructor;

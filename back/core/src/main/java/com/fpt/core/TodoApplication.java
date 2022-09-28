@@ -1,4 +1,4 @@
-package com.fpt.todo;
+package com.fpt.core;
 
 import com.fasterxml.jackson.databind.Module;
 import org.springframework.boot.SpringApplication;

@@ -1,4 +1,4 @@
-package com.fpt.todo;
+package com.fpt.core;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
