@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.UUID;
 
 public interface TodoService {
+    //region CRUD
     Page<TodoDTO> findAll();
 
     Page<TodoDTO> findAll(Pageable pageable);
@@ -22,6 +23,13 @@ public interface TodoService {
     void delete(UUID uuid);
 
     void deleteAll();
+    //endregion
+
+    //region Features
+    TodoDTO done(UUID uuid);
+
+    TodoDTO undone(UUID uuid);
+    //endregion
 
     @Builder
     record TodoDTO(UUID uuid, String text, Boolean done) {

@@ -15,7 +15,10 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class TodoJpaService implements TodoService {
-    private final TodoRepo repo;
+    private final        TodoRepo repo;
+    private static final String   NOT_FOUND_MSG = "Todo item not found";
+
+    //region CRUD
 
     @Override
     public Page<TodoDTO> findAll() {
@@ -42,7 +45,7 @@ public class TodoJpaService implements TodoService {
     public TodoDTO getByUUID(UUID uuid) {
         return repo.findByUuid(uuid)
                    .map(TodoDTO::fromEntity)
-                   .orElseThrow(() -> new NotFoundException("Todo item not found", Map.of("uuid", uuid)));
+                   .orElseThrow(() -> new NotFoundException(NOT_FOUND_MSG, Map.of("uuid", uuid)));
     }
 
     @Override
@@ -61,7 +64,7 @@ public class TodoJpaService implements TodoService {
                                      entity.setText(dto.text());
                                      entity.setDone(dto.done());
                                      return entity;
-                                 }).orElseThrow(() -> new NotFoundException("Todo item not found",
+                                 }).orElseThrow(() -> new NotFoundException(NOT_FOUND_MSG,
                                                                             Map.of("uuid", uuid)));
         return TodoDTO.fromEntity(repo.save(updatedEntity));
     }
@@ -76,4 +79,30 @@ public class TodoJpaService implements TodoService {
     public void deleteAll() {
         repo.deleteAll();
     }
+
+    //endregion
+
+    //region Features
+
+    @Override
+    @Transactional
+    public TodoService.TodoDTO done(UUID uuid) {
+        repo.setDone(uuid, true);
+        Todo updatedEntity = repo.findByUuid(uuid)
+                                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_MSG,
+                                                                          Map.of("uuid", uuid)));
+        return TodoDTO.fromEntity(repo.save(updatedEntity));
+    }
+
+    @Override
+    @Transactional
+    public TodoService.TodoDTO undone(UUID uuid) {
+        repo.setDone(uuid, false);
+        Todo updatedEntity = repo.findByUuid(uuid)
+                                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_MSG,
+                                                                          Map.of("uuid", uuid)));
+        return TodoDTO.fromEntity(repo.save(updatedEntity));
+    }
+
+    //endregion
 }

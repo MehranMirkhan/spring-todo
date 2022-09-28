@@ -14,14 +14,16 @@ import java.util.UUID;
 public class TodoController {
     private final TodoService service;
 
+    //region CRUD
+
     @GetMapping
     public Page<TodoService.TodoDTO> findAll(TodoService.TodoSearchDTO example, Pageable pageable) {
         return service.findAll(example, pageable);
     }
 
-    @GetMapping("{id}")
-    public TodoService.TodoDTO getById(@PathVariable UUID id) {
-        return service.getByUUID(id);
+    @GetMapping("{uuid}")
+    public TodoService.TodoDTO getByUuid(@PathVariable UUID uuid) {
+        return service.getByUUID(uuid);
     }
 
     @PostMapping
@@ -30,13 +32,27 @@ public class TodoController {
         return service.create(dto);
     }
 
-    @PutMapping("{id}")
-    public TodoService.TodoDTO update(@PathVariable UUID id, @RequestBody TodoService.TodoUpdateDTO dto) {
-        return service.update(id, dto);
+    @PutMapping("{uuid}")
+    public TodoService.TodoDTO update(@PathVariable UUID uuid, @RequestBody TodoService.TodoUpdateDTO dto) {
+        return service.update(uuid, dto);
     }
 
-    @DeleteMapping("{id}")
-    public void delete(@PathVariable UUID id) {
-        service.delete(id);
+    @DeleteMapping("{uuid}")
+    public void delete(@PathVariable UUID uuid) {
+        service.delete(uuid);
     }
+
+    //endregion
+
+    //region Feature
+    @PutMapping("{uuid}/done")
+    public TodoService.TodoDTO done(@PathVariable UUID uuid) {
+        return service.done(uuid);
+    }
+
+    @PutMapping("{uuid}/undone")
+    public TodoService.TodoDTO undone(@PathVariable UUID uuid) {
+        return service.undone(uuid);
+    }
+    //endregion
 }

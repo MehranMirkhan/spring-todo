@@ -17,14 +17,15 @@ import java.util.UUID;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 class TodoServiceTests {
-    @Autowired MockMvc      mvc;
-    @Autowired TodoService  service;
+    @Autowired MockMvc     mvc;
+    @Autowired TodoService service;
 
     @BeforeEach
     void setUp() {
@@ -97,6 +98,28 @@ class TodoServiceTests {
     void testNotFoundError() throws Exception {
         UUID uuid = UUID.randomUUID();
         mvc.perform(get("/api/todo/" + uuid)
+                            .contentType(MediaType.APPLICATION_JSON))
+           .andExpect(status().isNotFound())
+           .andExpect(jsonPath("$.id", notNullValue()))
+           .andExpect(jsonPath("$.payload.uuid", is(uuid.toString())));
+    }
+
+    @Test
+    void testDoneAndUndone() {
+        var  dto  = TodoService.TodoCreateDTO.builder().text("Example Task").build();
+        var  todo = service.create(dto);
+        UUID uuid = todo.uuid();
+        Assertions.assertEquals(false, todo.done());
+        service.done(uuid);
+        Assertions.assertEquals(true, service.getByUUID(uuid).done());
+        service.undone(uuid);
+        Assertions.assertEquals(false, service.getByUUID(uuid).done());
+    }
+
+    @Test
+    void testDoneAndUndoneError() throws Exception {
+        UUID uuid = UUID.randomUUID();
+        mvc.perform(put("/api/todo/" + uuid + "/done")
                             .contentType(MediaType.APPLICATION_JSON))
            .andExpect(status().isNotFound())
            .andExpect(jsonPath("$.id", notNullValue()))
