@@ -1,25 +1,28 @@
 package com.fpt.core;
 
-import com.fasterxml.jackson.databind.Module;
-import org.springframework.boot.SpringApplication;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.support.PageJacksonModule;
-import org.springframework.cloud.openfeign.support.SortJacksonModule;
-import org.springframework.context.annotation.Bean;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.annotation.AnnotationBeanNameGenerator;
+import org.springframework.util.Assert;
 
 @SpringBootApplication(scanBasePackages = "com.fpt")
 public class TodoApplication {
     public static void main(String[] args) {
-        SpringApplication.run(TodoApplication.class, args);
+        new SpringApplicationBuilder(TodoApplication.class)
+                .beanNameGenerator(beanNameGenerator())
+                .run(args);
     }
 
-    @Bean
-    public Module pageJacksonModule() {
-        return new PageJacksonModule();
-    }
-
-    @Bean
-    public Module sortJacksonModule() {
-        return new SortJacksonModule();
+    static BeanNameGenerator beanNameGenerator() {
+        return new AnnotationBeanNameGenerator() {
+            @Override
+            protected String buildDefaultBeanName(BeanDefinition definition) {
+                String beanClassName = definition.getBeanClassName();
+                Assert.state(beanClassName != null, "No bean class name set");
+                return beanClassName;
+            }
+        };
     }
 }

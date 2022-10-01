@@ -25,7 +25,7 @@ public class GeneralExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<ErrorResponse> handleAbstractException(AbstractException ex) {
         ErrorResponse error = ErrorResponse.builder()
                                            .id(ex.getId())
-                                           .message(ex.getMessage())
+                                           .message(ex.getReason())
                                            .payload(ex.getPayload())
                                            .build();
         return ResponseEntity.status(ex.getStatus()).body(error);
